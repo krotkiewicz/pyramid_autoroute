@@ -63,7 +63,8 @@ class RouteResolver(object):
             return
 
         pos = callable_module.find(self.root_module)
-        rest = callable_module[pos:].lstrip(self.root_module).replace('.', '/')
+        alen = len(self.root_module)
+        rest = callable_module[pos+alen:].replace('.', '/')
 
         path = '%s/%s' % (rest, callable_name)
         if name:
