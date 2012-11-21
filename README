@@ -1,1 +1,28 @@
-pyramid_autoroute is a package for generating pyramid routes for URL Dispath base on view location in file system.
+pyramid_autoroute is a package for generating pyramid routes for URL Dispath base on view location in python packages starting from predefined root module.
+
+i.e. if a view is located in views.foo.bar.baz:AView and the root_module is views
+automatic path to view will be genereated as /foo/bar/baz/aview
+
+Installation
+
+1. install egg using pip or easy_install
+2. in your application’s configuration you must add config.include('pyramid_autoroute') before config.scan()
+3. in configuration .ini file you have to add views root module:
+
+[app:myapp]
+pyramid.autoroute.root_module = myapp.views
+
+4. after launching application you will see i.e.:
+
+Auto generated routes:
+
+Name                             Path
+----------------------------------------------------------------
+add3                             /myview
+home3                            /my_view
+add                              /abc/myview
+home                             /abc/my_view
+home2                            /abc/my_view2
+home5                            /test_aaa/my_view
+adaaaaaaaaaaaaaaaaaaaaaad7       /test_aaa/aaa_tesaaaaaaaaaaaaaaaaaaaaaaaaaaaaaat/myviewaaaaaaaaaaaaaaaaaaaa
+home7                            /test_aaa/aaa_tesaaaaaaaaaaaaaaaaaaaaaaaaaaaaaat/my_view
