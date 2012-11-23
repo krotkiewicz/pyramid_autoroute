@@ -66,8 +66,11 @@ class RouteResolver(object):
         alen = len(self.root_module)
         rest = callable_module[pos+alen:].replace('.', '/')
 
-        path = '%s/%s' % (rest, callable_name)
         if name:
+            if name == 'root':
+                path = '/'
+            else:
+                path = '%s/%s' % (rest, callable_name)
             self.config.add_route(name, path)
             return name, path
 
