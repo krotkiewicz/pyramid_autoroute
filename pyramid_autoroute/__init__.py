@@ -1,11 +1,27 @@
 import inspect
 import re
 import sys
+from pyramid.url import urlencode
 from random import choice
 from string import letters
 from pyramid.path import caller_package
 
 from pyramid.exceptions import ConfigurationError
+
+first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+all_cap_re = re.compile('([a-z0-9])([A-Z])')
+
+def convert(name):
+    """
+    From CamelCase to snake_case
+    https://gist.github.com/3660565/f2e285d2e249b0ff042f524f0b74360e5d3535aa
+    """
+    s1 = first_cap_re.sub(r'\1_\2', name)
+    return all_cap_re.sub(r'\1_\2', s1).lower()
+
+
+class UnresolvedRoute(Exception):
+    pass
 
 class FakeConfig(object):
     def __init__(self, application_package):
@@ -13,6 +29,9 @@ class FakeConfig(object):
         self.views = []
 
     def with_package(self, *arg, **kwargs):
+        return self
+
+    def add_subscriber(self, *arg, **kwargs):
         return self
 
     def add_view(self, *args, **kwargs):
@@ -47,13 +66,16 @@ class RouteResolver(object):
             print view_name.ljust(longest_len+6, ' '), path
 
         print '\n'
+        return resolved
 
 
     def get_callable_name(self, callable):
         if inspect.isfunction(callable):
             return callable.__module__, callable.func_name.lower()
         elif inspect.isclass(callable):
-            return callable.__module__, callable.__name__.lower()
+            name =  callable.__name__
+            name = convert(name)
+            return callable.__module__, name
         else:
             raise NotImplementedError('Not implemented')
 
@@ -74,7 +96,16 @@ class RouteResolver(object):
             self.config.add_route(name, path)
             return name, path
 
-
+def prepare_url_for(resolved):
+    paths = [path for view_name, path in resolved ]
+    def url_for(request, name, **kwargs):
+        if name in paths:
+            if kwargs:
+                return '%s?%s' % (name, urlencode(kwargs))
+            return name
+        else:
+            raise UnresolvedRoute('Can\'t resolved %s route' % name)
+    return url_for
 
 def includeme(config):
     root_module = config.registry.settings['pyramid.autoroute.root_module']
@@ -83,4 +114,7 @@ def includeme(config):
     scanner = config.venusian.Scanner(config=fake_config)
     scanner.scan(caller)
 
-    RouteResolver(config, root_module, fake_config.views).resolveAll()
+
+    resolved = RouteResolver(config, root_module, fake_config.views).resolveAll()
+    config.add_request_method(prepare_url_for(resolved), name='url_for')
+
