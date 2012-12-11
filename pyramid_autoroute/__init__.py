@@ -112,7 +112,11 @@ def includeme(config):
     caller = caller_package(level=3)
     fake_config = FakeConfig(caller)
     scanner = config.venusian.Scanner(config=fake_config)
-    scanner.scan(caller)
+    if 'venusian.ignore' in config.registry.settings:
+        venusian_ingore = config.registry.settings['venusian.ignore']
+    else:
+        venusian_ingore = None
+    scanner.scan(caller, ignore=venusian_ingore)
 
 
     resolved = RouteResolver(config, root_module, fake_config.views).resolveAll()
