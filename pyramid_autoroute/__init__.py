@@ -101,7 +101,8 @@ def prepare_url_for(resolved):
     def url_for(request, name, **kwargs):
         if name in paths:
             if kwargs:
-                return '%s?%s' % (name, urlencode(kwargs))
+                params = dict((k, v) for k, v in kwargs.iteritems() if v != None)
+                return '%s?%s' % (name, urlencode(params))
             return name
         else:
             raise UnresolvedRoute('Can\'t resolved %s route' % name)
