@@ -4,8 +4,8 @@ from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
-    README = open(os.path.join(here, 'README.rst')).read()
-    CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+    README = open(os.path.join(here, 'README')).read()
+    CHANGES = open(os.path.join(here, 'CHANGES')).read()
 except IOError:
     README = CHANGES = ''
 
@@ -14,7 +14,7 @@ install_requires=[
     ]
 
 setup(name='pyramid_autoroute',
-      version='0.1',
+      version='0.1.1',
       description='Pyramid addon to auto detects views',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
