@@ -109,17 +109,23 @@ def prepare_url_for(resolved):
     return url_for
 
 def includeme(config):
-    root_module = config.registry.settings['pyramid.autoroute.root_module']
-    caller = caller_package(level=3)
-    fake_config = FakeConfig(caller)
+    root_module_str = config.registry.settings['pyramid.autoroute.root_module']
+    last = root_module_str.split('.')[-1]
+    root_module = __import__(root_module_str)
+    root_module = getattr(root_module, last)
+
+    fake_config = FakeConfig(None)
     scanner = config.venusian.Scanner(config=fake_config)
     if 'venusian.ignore' in config.registry.settings:
         venusian_ingore = config.registry.settings['venusian.ignore']
     else:
         venusian_ingore = None
-    scanner.scan(caller, ignore=venusian_ingore)
 
+    t1 = time.time()
+    scanner.scan(root_module, ignore=venusian_ingore)
+    diff = time.time() - t1
 
-    resolved = RouteResolver(config, root_module, fake_config.views).resolveAll()
+    resolved = RouteResolver(config, root_module_str, fake_config.views).resolveAll()
     config.add_request_method(prepare_url_for(resolved), name='url_for')
+    print 'Routes generated in %ss' % round(diff, 2)
 
